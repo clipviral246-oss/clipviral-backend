@@ -19,9 +19,9 @@ export const ENV = {
   REDIS_TLS: process.env.REDIS_TLS ? process.env.REDIS_TLS === 'true' || process.env.REDIS_TLS === '1' : undefined,
 
   // Cloudinary Storage (Zero-cost client video uploads)
-  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || 'lgxkjpat',
-  CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || '886617579976247',
-  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || '6hjFuHAn2kCJJh-TBmuPwIjl4nU',
+  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || '',
+  CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || '',
+  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || '',
   CLOUDINARY_URL: process.env.CLOUDINARY_URL || '',
 
   // OpenAI Whisper

@@ -21,8 +21,8 @@ export class UploadController {
       const projectId = body.projectId || `proj_${Date.now()}`;
       const rawList = body.clips || body.files;
 
-      // 1. Generate base Cloudinary signature
-      const baseSignature = storageService.generateUploadSignature(body.paramsToSign || {});
+      // 1. Generate secure server-controlled Cloudinary signature
+      const baseSignature = storageService.generateUploadSignature();
 
       // 2. If no clips/files provided in body, return direct signature payload for single/adhoc uploads
       if (!rawList || !Array.isArray(rawList) || rawList.length === 0) {

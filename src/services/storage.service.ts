@@ -35,29 +35,29 @@ export class StorageService {
   private apiSecret: string;
 
   constructor() {
-    this.cloudName = process.env.CLOUDINARY_CLOUD_NAME || ENV.CLOUDINARY_CLOUD_NAME || 'lgxkjpat';
-    this.apiKey = process.env.CLOUDINARY_API_KEY || ENV.CLOUDINARY_API_KEY || '886617579976247';
-    this.apiSecret = process.env.CLOUDINARY_API_SECRET || ENV.CLOUDINARY_API_SECRET || '6hjFuHAn2kCJJh-TBmuPwIjl4nU';
+    this.cloudName = process.env.CLOUDINARY_CLOUD_NAME || ENV.CLOUDINARY_CLOUD_NAME || '';
+    this.apiKey = process.env.CLOUDINARY_API_KEY || ENV.CLOUDINARY_API_KEY || '';
+    this.apiSecret = process.env.CLOUDINARY_API_SECRET || ENV.CLOUDINARY_API_SECRET || '';
 
-    cloudinary.config({
-      cloud_name: this.cloudName,
-      api_key: this.apiKey,
-      api_secret: this.apiSecret,
-      secure: true,
-    });
+    if (this.cloudName && this.apiKey && this.apiSecret) {
+      cloudinary.config({
+        cloud_name: this.cloudName,
+        api_key: this.apiKey,
+        api_secret: this.apiSecret,
+        secure: true,
+      });
+    }
   }
 
   /**
-   * Generates a single Cloudinary upload signature for client-side direct upload
+   * Generates a tamper-proof Cloudinary upload signature for client-side direct upload.
+   * Strictly signs only the server-generated timestamp to prevent parameter tampering.
    */
-  generateUploadSignature(customParams: Record<string, any> = {}): CloudinaryUploadSignature {
-    const timestamp = customParams.timestamp || Math.round(Date.now() / 1000);
-    const paramsToSign: Record<string, any> = {
-      timestamp,
-      ...customParams,
-    };
-
-    const signature = cloudinary.utils.api_sign_request(paramsToSign, this.apiSecret);
+  generateUploadSignature(): CloudinaryUploadSignature {
+    const timestamp = Math.round(Date.now() / 1000);
+    const signature = this.apiSecret
+      ? cloudinary.utils.api_sign_request({ timestamp }, this.apiSecret)
+      : 'mock_dev_signature';
 
     return {
       signature,
