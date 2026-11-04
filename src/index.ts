@@ -6,6 +6,7 @@ import { videoController } from './controllers/video.controller';
 import { stripeController } from './controllers/stripe.controller';
 import { socialController } from './controllers/social.controller';
 import { startVideoWorker } from './queues/video.worker';
+import { uploadRateLimiter, videoProcessRateLimiter } from './middlewares/rateLimiter';
 
 const app = express();
 const PORT = ENV.PORT || 4000;
@@ -83,14 +84,14 @@ app.get('/api/health', (_req: Request, res: Response) => {
   });
 });
 
-// A. Cloudinary Batch Signed Upload URLs
-app.get('/api/upload', (req, res) => uploadController.getPresignedUrls(req, res));
-app.post('/api/upload', (req, res) => uploadController.getPresignedUrls(req, res));
-app.post('/api/storage/upload-urls', (req, res) => uploadController.getPresignedUrls(req, res));
+// A. Cloudinary Batch Signed Upload URLs (Protected by Strict Rate Limiter: max 20 req / 15m)
+app.get('/api/upload', uploadRateLimiter, (req, res) => uploadController.getPresignedUrls(req, res));
+app.post('/api/upload', uploadRateLimiter, (req, res) => uploadController.getPresignedUrls(req, res));
+app.post('/api/storage/upload-urls', uploadRateLimiter, (req, res) => uploadController.getPresignedUrls(req, res));
 
-// B. BullMQ + Redis Background Video Processing Pipeline (FFmpeg + Whisper)
-app.post('/api/video/process', (req, res) => videoController.triggerProcessing(req, res));
-app.post('/api/jobs/process', (req, res) => videoController.triggerProcessing(req, res));
+// B. BullMQ + Redis Background Video Processing Pipeline (Protected: max 20 jobs / 15m)
+app.post('/api/video/process', videoProcessRateLimiter, (req, res) => videoController.triggerProcessing(req, res));
+app.post('/api/jobs/process', videoProcessRateLimiter, (req, res) => videoController.triggerProcessing(req, res));
 app.get('/api/video/status/:jobId', (req, res) => videoController.getJobStatus(req, res));
 app.get('/api/jobs/status/:jobId', (req, res) => videoController.getJobStatus(req, res));
 
